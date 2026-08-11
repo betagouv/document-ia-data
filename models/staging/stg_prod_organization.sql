@@ -3,11 +3,11 @@ with source as (
 )
 
 select
-    id,
-    contact_email,
-    name,
-    platform_role,
-    created_at,
-    updated_at,
-    'prod'::varchar as env
+    id
+    , contact_email
+    , name
+    , platform_role
+    , created_at
+    , updated_at
+    , 'prod'::VARCHAR as env
 from source

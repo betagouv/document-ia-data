@@ -9,11 +9,11 @@ organizations as (
 )
 
 select
-    id,
-    contact_email,
-    name,
-    platform_role,
-    created_at,
-    updated_at,
-    env
+    id
+    , contact_email
+    , name
+    , platform_role
+    , created_at
+    , updated_at
+    , env
 from organizations
