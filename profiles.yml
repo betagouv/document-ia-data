@@ -1,0 +1,16 @@
+# Connexions dbt. Aucun secret ici : tout vient de l'environnement (voir .env.example).
+# dbt lit ce fichier car il est à la racine du projet (répertoire courant) ;
+# les variables du fichier .env local sont chargées automatiquement par dbt.
+document_ia_data:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PORT', '5432') | int }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'document_ia') }}"
+      user: "{{ env_var('DBT_USER', 'document_ia') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'document_ia') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'dbt_dev') }}"
+      sslmode: "{{ env_var('DBT_SSLMODE', 'prefer') }}"
+      threads: "{{ env_var('DBT_THREADS', '4') | int }}"

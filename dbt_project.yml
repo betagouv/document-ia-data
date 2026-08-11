@@ -1,0 +1,35 @@
+name: "document_ia_data"
+version: "0.1.0"
+config-version: 2
+
+profile: "document_ia_data"
+
+require-dbt-version: [">=1.12.0", "<2.0.0"]
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  document_ia_data:
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +materialized: table
+    core:
+      +materialized: table
+    analytics:
+      +materialized: table
+
+flags:
+  send_anonymous_usage_stats: false
+  require_explicit_package_overrides_for_builtin_materializations: true
+  source_freshness_run_project_hooks: true
