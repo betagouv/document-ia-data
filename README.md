@@ -23,7 +23,15 @@ source .venv/bin/activate
 make db-up            # PostgreSQL local sur le port 5432
 dbt debug             # vérifie la configuration et la connexion
 dbt build             # seeds, modèles, snapshots et tests
+make lint             # lint SQL des modèles (sqlfluff + templater dbt)
 dbt docs generate && dbt docs serve
+```
+
+Le lint utilise [SQLFluff](https://docs.sqlfluff.com/) avec le dialecte Postgres et le
+templater dbt (voir [`.sqlfluff`](.sqlfluff)). Corriger automatiquement :
+
+```bash
+sqlfluff fix models/
 ```
 
 ## Exécution sur l'add-on PostgreSQL
@@ -114,6 +122,7 @@ vérifications : [scripts/sql/README.md](scripts/sql/README.md).
 | `tests/`              | Tests SQL sur mesure                                               |
 | `analyses/`           | Requêtes exploratoires, compilées mais non matérialisées           |
 | `scripts/sql/`        | Scripts de permissions Postgres (schémas, grants, default privileges) |
+| `.sqlfluff`           | Règles de lint SQL (dialecte postgres, templater dbt)                  |
 
 Les modèles sont matérialisés dans le schéma `DBT_SCHEMA` (`dbt_dev` en cible `dev`,
 `dbt_prod` en cible `prod`). Les sources staging viseront les trois schémas landing
@@ -121,5 +130,9 @@ Les modèles sont matérialisés dans le schéma `DBT_SCHEMA` (`dbt_dev` en cibl
 
 ## Intégration continue
 
-Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) exécute `dbt deps`,
-`dbt debug` puis `dbt build` sur chaque pull request, contre un service PostgreSQL éphémère.
+Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) exécute sur chaque
+pull request (et push sur `main`) :
+
+1. `dbt deps` puis `dbt debug` (Postgres éphémère)
+2. `sqlfluff lint models/`
+3. création des schémas landing vides, puis `dbt build --fail-fast`

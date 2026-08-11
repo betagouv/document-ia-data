@@ -1,7 +1,7 @@
 VENV := .venv
 DBT := $(VENV)/bin/dbt
 
-.PHONY: help install deps db-up db-down debug build run test docs clean
+.PHONY: help install deps db-up db-down debug build run test lint docs clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/'
@@ -26,6 +26,9 @@ run: ## Exécute les modèles
 
 test: ## Exécute les tests
 	$(DBT) test
+
+lint: ## Lint les modèles SQL avec sqlfluff
+	$(VENV)/bin/sqlfluff lint models/
 
 docs: ## Génère et sert la documentation
 	$(DBT) docs generate

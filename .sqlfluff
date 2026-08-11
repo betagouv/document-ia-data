@@ -1,0 +1,59 @@
+[sqlfluff]
+# set templater = dbt for ci jobs
+templater = dbt
+dialect = postgres
+verbose = 0
+nocolor = False
+max_line_length = 120
+
+# Modern codes (sqlfluff 4.x). Legacy aliases in parentheses.
+# LT05 (L016) - We allow longer lines as some of our queries are complex. Maybe should limit in future?
+# AL07 (L031) - Avoid aliases in from and join
+# RF02 (L027) - Asks for qualified columns for ambiguous ones, but we don't qualify our columns
+# RF06 - Unnecessary quoted identifier
+# RF04 - Keywords should not be used as identifiers
+# AL03 - Column expression without alias. Use explicit `AS`
+# ST06 - Select wildcards then simple targets before calculations / aggregates
+exclude_rules = LT05, AL07, RF02, RF06, RF04, AL03, ST06
+# ignore_templated_areas = True
+# encoding = autodetect
+
+[sqlfluff:templater:dbt]
+project_dir = ./
+profiles_dir = ./
+
+[sqlfluff:indentation]
+tab_space_size = 4
+
+[sqlfluff:layout:type:comma]
+line_position = leading
+
+# Some rules can be configured directly from the config common to other rules.
+[sqlfluff:rules]
+allow_scalar = True
+single_table_references = consistent
+unquoted_identifiers_policy = all
+
+# Inconsistent capitalisation of keywords (SELECT, FROM, WHERE)
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+# Inconsistent capitalisation of unquoted identifiers.
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+
+# Inconsistent capitalisation of function names (SUM, COUNT)
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = upper
+
+# Inconsistent capitalisation of boolean/null literal (true, false, null)
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = lower
+
+# Inconsistent capitalisation of datatypes (VARCHAR, TIMESTAMP)
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = upper
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = True
+load_macros_from_path = macros
