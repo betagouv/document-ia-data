@@ -217,7 +217,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# dbt (package-lock.yml est versionné volontairement)
+# dbt
 target/
 dbt_packages/
 logs/

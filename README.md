@@ -29,23 +29,83 @@ dbt docs generate && dbt docs serve
 ## Exécution sur l'add-on PostgreSQL
 
 Les identifiants ne sont jamais versionnés : `profiles.yml` lit uniquement des variables
-d'environnement. Pour cibler l'add-on depuis un poste ou un one-off Scalingo :
+d'environnement. Cible `dev` → schéma `dbt_dev` ; cible `prod` → schéma `dbt_prod`
+(avec `sslmode=require` et aucune valeur par défaut sur l'hôte / le mot de passe).
 
 ```bash
-eval "$(python scripts/db_url_to_env.py "$(scalingo --app <app> env-get SCALINGO_POSTGRESQL_URL)")"
-DBT_TARGET=prod dbt build
+# Exemple : construire avec le rôle dbt_prod contre l'add-on
+DBT_TARGET=prod \
+DBT_HOST=... DBT_PORT=... DBT_DBNAME=... \
+DBT_USER=dbt_prod DBT_PASSWORD=... \
+dbt build
 ```
 
-La cible `prod` n'a aucune valeur par défaut : si une variable manque, dbt échoue
-immédiatement plutôt que d'écrire dans la mauvaise base. Elle force par ailleurs
-`sslmode=require`.
+## Permissions base de données
+
+Les schémas et grants de l'add-on Scalingo sont posés par des scripts SQL versionnés
+dans [`scripts/sql/`](scripts/sql/) :
+
+```mermaid
+flowchart LR
+  subgraph apps [Environnements applicatifs]
+    appProd[app prod]
+    appStaging[app staging]
+    appSandbox[app sandbox]
+  end
+
+  subgraph landing [Landing anonymisé]
+    dataProd[data_prod]
+    dataStaging[data_staging]
+    dataSandbox[data_sandbox]
+  end
+
+  subgraph dbtSchemas [Schémas dbt]
+    dbtDevSchema[dbt_dev]
+    dbtProdSchema[dbt_prod]
+  end
+
+  admin["admin document_ia_admin"]
+  dbtDevUser[dbt_dev]
+  dbtProdUser[dbt_prod]
+  metabaseUser[metabase]
+
+  appProd -->|"réplication + anonymisation"| dataProd
+  appStaging -->|"réplication + anonymisation"| dataStaging
+  appSandbox -->|"réplication + anonymisation"| dataSandbox
+
+  admin -->|"écriture owner"| dataProd
+  admin -->|"écriture owner"| dataStaging
+  admin -->|"écriture owner"| dataSandbox
+
+  dbtDevUser -->|"SELECT"| dataProd
+  dbtDevUser -->|"SELECT"| dataStaging
+  dbtDevUser -->|"SELECT"| dataSandbox
+  dbtDevUser -->|"ownership + write"| dbtDevSchema
+
+  dbtProdUser -->|"SELECT"| dataProd
+  dbtProdUser -->|"SELECT"| dataStaging
+  dbtProdUser -->|"SELECT"| dataSandbox
+  dbtProdUser -->|"ownership + write"| dbtProdSchema
+
+  metabaseUser -->|"SELECT"| dbtProdSchema
+```
+
+| Utilisateur | Étape | Droits |
+| --- | --- | --- |
+| `document_ia_admin` (admin) | Réplication / anonymisation | Owner et écriture sur `data_*` ; ownership de `public` (config Metabase) |
+| `dbt_dev` | Transformation (env de développement) | SELECT sur les 3 `data_*` ; ownership complet de `dbt_dev` |
+| `dbt_prod` | Transformation (env de production) | SELECT sur les 3 `data_*` ; ownership complet de `dbt_prod` |
+| `metabase` | Analytics | SELECT sur `dbt_prod` uniquement (y compris tables recréées par `dbt build`) |
+
+À appliquer une fois, dans l'ordre, avec trois connexions distinctes. Détail et
+vérifications : [scripts/sql/README.md](scripts/sql/README.md).
 
 ## Structure
 
 | Chemin                | Contenu                                                            |
 | --------------------- | ------------------------------------------------------------------ |
 | `dbt_project.yml`     | Configuration du projet et des couches de modèles                  |
-| `profiles.yml`        | Connexions `dev` (locale) et `prod` (add-on), pilotées par l'environnement |
+| `profiles.yml`        | Connexions `dev` (`dbt_dev`) et `prod` (`dbt_prod`), pilotées par l'environnement |
 | `packages.yml`        | Packages dbt (`dbt_utils`)                                         |
 | `models/`             | Modèles, organisés en `staging` / `core` / `analytics` (voir [models/README.md](models/README.md)) |
 | `macros/`             | Macros Jinja réutilisables                                         |
@@ -53,10 +113,11 @@ immédiatement plutôt que d'écrire dans la mauvaise base. Elle force par aille
 | `snapshots/`          | Historisation des tables sources                                   |
 | `tests/`              | Tests SQL sur mesure                                               |
 | `analyses/`           | Requêtes exploratoires, compilées mais non matérialisées           |
-| `scripts/`            | Utilitaires (conversion d'URL de connexion en variables `DBT_*`)    |
+| `scripts/sql/`        | Scripts de permissions Postgres (schémas, grants, default privileges) |
 
-Les modèles `staging`, `core` et `analytics` sont matérialisés en tables dans le schéma `DBT_SCHEMA`
-(`dbt_dev` par défaut).
+Les modèles sont matérialisés dans le schéma `DBT_SCHEMA` (`dbt_dev` en cible `dev`,
+`dbt_prod` en cible `prod`). Les sources staging viseront les trois schémas landing
+`data_prod` / `data_staging` / `data_sandbox`.
 
 ## Intégration continue
 

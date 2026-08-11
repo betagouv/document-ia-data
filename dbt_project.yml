@@ -2,7 +2,7 @@ name: "document_ia_data"
 version: "0.1.0"
 config-version: 2
 
-profile: "document_ia_data"
+profile: "document_ia"
 
 require-dbt-version: [">=1.12.0", "<2.0.0"]
 
