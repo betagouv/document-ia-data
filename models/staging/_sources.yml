@@ -1,0 +1,186 @@
+version: 2
+
+sources:
+  - name: data_prod
+    description: >
+      Landing anonymisé de l'environnement applicatif de production.
+      Écriture réservée à l'admin ; lecture seule pour les rôles dbt.
+    schema: data_prod
+    tables:
+      - name: organization
+        description: Organisations Document-IA.
+        columns: &organization_columns
+          - name: id
+            description: Identifiant unique de l'organisation.
+            data_type: uuid
+            tests:
+              - unique
+              - not_null
+          - name: contact_email
+            description: Email de contact.
+            data_type: varchar
+            tests:
+              - not_null
+          - name: name
+            description: Nom de l'organisation.
+            data_type: varchar
+            tests:
+              - not_null
+          - name: platform_role
+            description: Rôle de l'organisation dans la plateforme.
+            data_type: varchar
+            tests:
+              - not_null
+          - name: created_at
+            description: Date de création.
+            data_type: timestamptz
+            tests:
+              - not_null
+          - name: updated_at
+            description: Date de dernière mise à jour.
+            data_type: timestamptz
+            tests:
+              - not_null
+
+      - name: event_store
+        description: Journal d'événements de workflows (réplique anonymisée).
+        columns:
+          - name: id
+            description: Identifiant unique de l'événement.
+            data_type: uuid
+            tests: &event_store_id_tests
+              - unique
+              - not_null
+          - name: workflow_id
+            description: Identifiant du workflow.
+            data_type: varchar
+            tests: &event_store_required
+              - not_null
+          - name: execution_id
+            description: Identifiant de l'exécution.
+            data_type: varchar
+            tests: *event_store_required
+          - name: created_at
+            description: Horodatage de l'événement.
+            data_type: timestamptz
+            tests: *event_store_required
+          - name: event_type
+            description: Type d'événement.
+            data_type: varchar
+            tests: *event_store_required
+          - name: event
+            description: Payload JSON de l'événement.
+            data_type: jsonb
+            tests: *event_store_required
+          - name: organization_id
+            description: Organisation liée.
+            data_type: uuid
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('data_prod', 'organization')
+                    field: id
+          - name: anonymization_status
+            description: Statut d'anonymisation (défaut PENDING).
+            data_type: varchar
+            tests: *event_store_required
+
+  - name: data_staging
+    description: >
+      Landing anonymisé de l'environnement applicatif de staging.
+      Écriture réservée à l'admin ; lecture seule pour les rôles dbt.
+    schema: data_staging
+    tables:
+      - name: organization
+        description: Organisations Document-IA.
+        columns: *organization_columns
+
+      - name: event_store
+        description: Journal d'événements de workflows (réplique anonymisée).
+        columns:
+          - name: id
+            description: Identifiant unique de l'événement.
+            data_type: uuid
+            tests: *event_store_id_tests
+          - name: workflow_id
+            description: Identifiant du workflow.
+            data_type: varchar
+            tests: *event_store_required
+          - name: execution_id
+            description: Identifiant de l'exécution.
+            data_type: varchar
+            tests: *event_store_required
+          - name: created_at
+            description: Horodatage de l'événement.
+            data_type: timestamptz
+            tests: *event_store_required
+          - name: event_type
+            description: Type d'événement.
+            data_type: varchar
+            tests: *event_store_required
+          - name: event
+            description: Payload JSON de l'événement.
+            data_type: jsonb
+            tests: *event_store_required
+          - name: organization_id
+            description: Organisation liée.
+            data_type: uuid
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('data_staging', 'organization')
+                    field: id
+          - name: anonymization_status
+            description: Statut d'anonymisation (défaut PENDING).
+            data_type: varchar
+            tests: *event_store_required
+
+  - name: data_sandbox
+    description: >
+      Landing anonymisé de l'environnement applicatif sandbox.
+      Écriture réservée à l'admin ; lecture seule pour les rôles dbt.
+    schema: data_sandbox
+    tables:
+      - name: organization
+        description: Organisations Document-IA.
+        columns: *organization_columns
+
+      - name: event_store
+        description: Journal d'événements de workflows (réplique anonymisée).
+        columns:
+          - name: id
+            description: Identifiant unique de l'événement.
+            data_type: uuid
+            tests: *event_store_id_tests
+          - name: workflow_id
+            description: Identifiant du workflow.
+            data_type: varchar
+            tests: *event_store_required
+          - name: execution_id
+            description: Identifiant de l'exécution.
+            data_type: varchar
+            tests: *event_store_required
+          - name: created_at
+            description: Horodatage de l'événement.
+            data_type: timestamptz
+            tests: *event_store_required
+          - name: event_type
+            description: Type d'événement.
+            data_type: varchar
+            tests: *event_store_required
+          - name: event
+            description: Payload JSON de l'événement.
+            data_type: jsonb
+            tests: *event_store_required
+          - name: organization_id
+            description: Organisation liée.
+            data_type: uuid
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('data_sandbox', 'organization')
+                    field: id
+          - name: anonymization_status
+            description: Statut d'anonymisation (défaut PENDING).
+            data_type: varchar
+            tests: *event_store_required

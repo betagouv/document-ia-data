@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_prod_organization
+    description: Organisations du landing data_prod (env applicatif de production).
+    columns: &stg_organization_columns
+      - name: id
+        description: Identifiant unique de l'organisation.
+        tests:
+          - unique
+          - not_null
+      - name: contact_email
+        description: Email de contact.
+        tests:
+          - not_null
+      - name: name
+        description: Nom de l'organisation.
+        tests:
+          - not_null
+      - name: platform_role
+        description: Rôle de l'organisation dans la plateforme.
+        tests:
+          - not_null
+      - name: created_at
+        description: Date de création.
+        tests:
+          - not_null
+      - name: updated_at
+        description: Date de dernière mise à jour.
+        tests:
+          - not_null
+      - name: env
+        description: Environnement applicatif d'origine (prod, staging ou sandbox).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['prod', 'staging', 'sandbox']
+
+  - name: stg_staging_organization
+    description: Organisations du landing data_staging (env applicatif de staging).
+    columns: *stg_organization_columns
+
+  - name: stg_sandbox_organization
+    description: Organisations du landing data_sandbox (env applicatif sandbox).
+    columns: *stg_organization_columns

@@ -1,7 +1,7 @@
 # Connexions dbt. Aucun secret ici : tout vient de l'environnement (voir .env.example).
 # dbt lit ce fichier car il est à la racine du projet (répertoire courant) ;
 # les variables du fichier .env local sont chargées automatiquement par dbt.
-document_ia_data:
+document_ia:
   target: "{{ env_var('DBT_TARGET', 'dev') }}"
   outputs:
     dev:
