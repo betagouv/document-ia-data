@@ -68,10 +68,6 @@ sources:
             description: Type d'événement.
             data_type: varchar
             tests: *event_store_required
-          - name: event
-            description: Payload JSON de l'événement.
-            data_type: jsonb
-            tests: *event_store_required
           - name: organization_id
             description: Organisation liée.
             data_type: uuid
@@ -80,10 +76,6 @@ sources:
                   arguments:
                     to: source('data_prod', 'organization')
                     field: id
-          - name: anonymization_status
-            description: Statut d'anonymisation (défaut PENDING).
-            data_type: varchar
-            tests: *event_store_required
 
   - name: data_staging
     description: >
@@ -118,10 +110,6 @@ sources:
             description: Type d'événement.
             data_type: varchar
             tests: *event_store_required
-          - name: event
-            description: Payload JSON de l'événement.
-            data_type: jsonb
-            tests: *event_store_required
           - name: organization_id
             description: Organisation liée.
             data_type: uuid
@@ -130,10 +118,6 @@ sources:
                   arguments:
                     to: source('data_staging', 'organization')
                     field: id
-          - name: anonymization_status
-            description: Statut d'anonymisation (défaut PENDING).
-            data_type: varchar
-            tests: *event_store_required
 
   - name: data_sandbox
     description: >
@@ -168,10 +152,6 @@ sources:
             description: Type d'événement.
             data_type: varchar
             tests: *event_store_required
-          - name: event
-            description: Payload JSON de l'événement.
-            data_type: jsonb
-            tests: *event_store_required
           - name: organization_id
             description: Organisation liée.
             data_type: uuid
@@ -180,7 +160,3 @@ sources:
                   arguments:
                     to: source('data_sandbox', 'organization')
                     field: id
-          - name: anonymization_status
-            description: Statut d'anonymisation (défaut PENDING).
-            data_type: varchar
-            tests: *event_store_required

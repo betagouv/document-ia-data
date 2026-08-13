@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: analytics_daily_executions
+    description: >
+      Agrégat journalier des exécutions de workflows : nombre d'exécutions et
+      durée totale, par date de démarrage, environnement, workflow, organisation
+      et statut. La clé métier est
+      (execution_date, env, workflow_id, organization_id, organization_name, status).
+    columns:
+      - name: execution_date
+        description: Date de démarrage de l'exécution (date(started_at)).
+        tests:
+          - not_null
+      - name: env
+        description: Environnement applicatif d'origine (prod, staging ou sandbox).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['prod', 'staging', 'sandbox']
+      - name: workflow_id
+        description: Identifiant du workflow exécuté.
+        tests:
+          - not_null
+      - name: organization_id
+        description: Identifiant de l'organisation (nullable si absente de core_organizations).
+      - name: organization_name
+        description: Nom de l'organisation (depuis core_organizations).
+      - name: status
+        description: Statut final de l'exécution (Succeeded ou Failed).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Succeeded', 'Failed']
+      - name: execution_count
+        description: Nombre d'exécutions dans le groupe.
+        tests:
+          - not_null
+      - name: total_duration_seconds
+        description: Somme des durées d'exécution en secondes.
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - execution_date
+              - env
+              - workflow_id
+              - organization_id
+              - organization_name
+              - status

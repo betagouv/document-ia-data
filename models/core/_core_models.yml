@@ -38,3 +38,50 @@ models:
           - accepted_values:
               arguments:
                 values: ['prod', 'staging', 'sandbox']
+
+  - name: core_executions
+    description: >
+      Exécutions de workflows consolidées sur les trois environnements
+      applicatifs (prod, staging, sandbox). Une ligne par (env, execution_id),
+      dérivée des événements WorkflowExecutionStarted / Completed / Failed.
+      La clé métier est (env, execution_id).
+    columns:
+      - name: env
+        description: Environnement applicatif d'origine (prod, staging ou sandbox).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['prod', 'staging', 'sandbox']
+      - name: execution_id
+        description: Identifiant de l'exécution dans son environnement source.
+        tests:
+          - not_null
+          - unique
+      - name: workflow_id
+        description: Identifiant du workflow exécuté.
+        tests:
+          - not_null
+      - name: organization_id
+        description: Identifiant de l'organisation (jointure sur core_organizations).
+      - name: organization_name
+        description: Nom de l'organisation (depuis core_organizations).
+      - name: started_at
+        description: Horodatage de l'événement WorkflowExecutionStarted.
+        tests:
+          - not_null
+      - name: ended_at
+        description: Horodatage de l'événement terminal (Completed ou Failed, exclusifs).
+        tests:
+          - not_null
+      - name: status
+        description: Statut final de l'exécution (Succeeded ou Failed).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Succeeded', 'Failed']
+      - name: duration_seconds
+        description: Durée totale de l'exécution en secondes (ended_at - started_at).
+        tests:
+          - not_null

@@ -14,3 +14,13 @@ document_ia:
       schema: "{{ env_var('DBT_SCHEMA', 'dbt_dev') }}"
       sslmode: "{{ env_var('DBT_SSLMODE', 'prefer') }}"
       threads: "{{ env_var('DBT_THREADS', '4') | int }}"
+    prod:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PORT', '5432') | int }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'document_ia') }}"
+      user: "{{ env_var('DBT_USER', 'document_ia') }}"
+      password: "{{ env_var('DBT_PASSWORD', 'document_ia') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'dbt_prod') }}"
+      sslmode: "{{ env_var('DBT_SSLMODE', 'require') }}"
+      threads: "{{ env_var('DBT_THREADS', '4') | int }}"

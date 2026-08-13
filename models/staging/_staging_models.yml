@@ -44,3 +44,51 @@ models:
   - name: stg_sandbox_organization
     description: Organisations du landing data_sandbox (env applicatif sandbox).
     columns: *stg_organization_columns
+
+  - name: stg_prod_event_store
+    description: >
+      Journal d'événements du landing data_prod.
+      Modèle incrémental : watermark sur created_at, dédoublonnage sur id.
+    columns: &stg_event_store_columns
+      - name: id
+        description: Identifiant unique de l'événement.
+        tests:
+          - unique
+          - not_null
+      - name: workflow_id
+        description: Identifiant du workflow.
+        tests:
+          - not_null
+      - name: execution_id
+        description: Identifiant de l'exécution.
+        tests:
+          - not_null
+      - name: created_at
+        description: Horodatage de l'événement (colonne de watermark incrémental).
+        tests:
+          - not_null
+      - name: event_type
+        description: Type d'événement.
+        tests:
+          - not_null
+      - name: organization_id
+        description: Organisation liée (nullable).
+      - name: env
+        description: Environnement applicatif d'origine (prod, staging ou sandbox).
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['prod', 'staging', 'sandbox']
+
+  - name: stg_staging_event_store
+    description: >
+      Journal d'événements du landing data_staging.
+      Modèle incrémental : watermark sur created_at, dédoublonnage sur id.
+    columns: *stg_event_store_columns
+
+  - name: stg_sandbox_event_store
+    description: >
+      Journal d'événements du landing data_sandbox.
+      Modèle incrémental : watermark sur created_at, dédoublonnage sur id.
+    columns: *stg_event_store_columns
